@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include <windows.h>
+RECT rct;
 typedef struct SPoint {
 	float x, y;
 }TPoint;
@@ -73,19 +74,29 @@ void WinMove() {
 
 }
 void WinShow(HDC dc) {
+	HDC memDC = CreateCompatibleDC(dc);
+	HBITMAP memBM = CreateCompatibleBitmap(dc, rct.right - rct.left, rct.bottom - rct.top);
+	SelectObject(memDC, memBM);
 	
-	SelectObject(dc, GetStockObject(DC_BRUSH));
-	SetDCBrushColor(dc, RGB(255, 255, 255));
-	Rectangle(dc, 0, 0, 640, 480);
-	DrawSprite(rect, dc);
+	SelectObject(memDC, GetStockObject(DC_BRUSH));
+	SetDCBrushColor(memDC, RGB(255, 255, 255));
+	Rectangle(memDC, 0, 0, 640, 480);
+	DrawSprite(rect, memDC);
+
+	BitBlt(dc, 0, 0, rct.right - rct.left, rct.bottom - rct.top, memDC, 0, 0, SRCCOPY);
+	DeleteDC(memDC);
+	DeleteObject(memBM);
 }
 
 
 
-LRESULT WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
 
+	}
+	else if (message == WM_SIZE) {
+		GetClientRect(hwnd, &rct);
 	}
 	else
 	{
@@ -98,7 +109,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	WNDCLASSA wcl;
 	memset(&wcl, 0, sizeof(WNDCLASSA));
 	wcl.lpszClassName = "my Window";
-	wcl.lpfnWndProc = DefWindowProcA;
+	wcl.lpfnWndProc = WndProc;
 
 	RegisterClassA(&wcl);
 
@@ -112,8 +123,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	{
 		if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
 			if (msg.message == WM_QUIT) break;
-			DispatchMessage(&msg);
 			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+			
 		}
 		else {
 			WinMove();
