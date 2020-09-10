@@ -23,7 +23,7 @@ typedef struct Sprite {
 void InitSprite(TSprite *sprite, float xPos, float yPos, float width, float height) {
 	sprite->pos = point(xPos, yPos);
 	sprite->size = point(width, height);
-	sprite->brush = RGB(0, 255, 0);
+	sprite->brush = RGB(0, 0, 0);
 	sprite->acc = point(0, 0);
 
 }
@@ -60,6 +60,7 @@ void Navigation() {
 	if (GetKeyState('D') < 0) {
 		rect.acc.x = acc;
 	}
+	
 
 
 }
@@ -72,6 +73,9 @@ void WinMove() {
 	Navigation();
 	MoveSprite(&rect);
 
+}
+void WinMoveAlt() {
+	MoveSprite(&rect);
 }
 void WinShow(HDC dc) {
 	HDC memDC = CreateCompatibleDC(dc);
@@ -91,6 +95,7 @@ void WinShow(HDC dc) {
 
 
 LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+	
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
 
@@ -98,6 +103,7 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 	else if (message == WM_SIZE) {
 		GetClientRect(hwnd, &rct);
 	}
+	
 	else
 	{
 		DefWindowProcA(hwnd, message, wparam, lparam);
@@ -105,7 +111,7 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 }
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
-
+	static int acc = 4;
 	WNDCLASSA wcl;
 	memset(&wcl, 0, sizeof(WNDCLASSA));
 	wcl.lpszClassName = "my Window";
@@ -122,10 +128,41 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
 	while (1)
 	{
 		if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) break;
+			if (msg.message == WM_QUIT)
+			{
+				break;
+			}
+			else if (msg.message == WM_MOUSEWHEEL) {
+				int key = GET_KEYSTATE_WPARAM(msg.wParam);
+				int delta = GET_WHEEL_DELTA_WPARAM(msg.wParam);
+
+				if (delta > 0) {
+					if (key == MK_SHIFT) {
+						rect.acc.x = acc;
+						WinMoveAlt();
+						WinShow(dc);
+					}
+					else {
+						rect.acc.y = -acc;
+						WinMoveAlt();
+						WinShow(dc);
+					}
+				}
+				else {
+					if (key == MK_SHIFT) {
+						rect.acc.x = -acc;
+						WinMoveAlt();
+						WinShow(dc);
+					}
+					else {
+						rect.acc.y = acc;
+						WinMoveAlt();
+						WinShow(dc);
+					}
+				}
+			}
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-			
 		}
 		else {
 			WinMove();
