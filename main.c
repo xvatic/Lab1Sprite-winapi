@@ -38,6 +38,24 @@ void DrawSprite(TSprite sprite, HDC dc) {
 }
 
 void MoveSprite(TSprite* sprite) {
+	if ((sprite->pos.x + sprite->acc.x) > 540) {
+		sprite->pos.x -= 100;
+		return;
+	}
+	if ((sprite->pos.x + sprite->acc.x) < 0) {
+		sprite->pos.x += 100;
+		return;
+	}
+	if ((sprite->pos.y + sprite->acc.y) > 380) {
+		sprite->pos.y -= 100;
+		return;
+	}
+	if ((sprite->pos.y - sprite->acc.y) < 0) {
+		sprite->pos.y += 100;
+		return;
+	}
+	
+
 	sprite->pos.x += sprite->acc.x;
 	sprite->pos.y += sprite->acc.y;
 }
