@@ -20,7 +20,7 @@ typedef struct Sprite {
 	TPoint acc;
 } TSprite;
 
-void InitSprite(TSprite *sprite, float xPos, float yPos, float width, float height) {
+void InitSprite(TSprite* sprite, float xPos, float yPos, float width, float height) {
 	sprite->pos = point(xPos, yPos);
 	sprite->size = point(width, height);
 	sprite->brush = RGB(0, 0, 0);
@@ -33,12 +33,12 @@ void DrawSprite(TSprite sprite, HDC dc) {
 	SetDCBrushColor(dc, RGB(0, 0, 0));
 	SelectObject(dc, GetStockObject(DC_PEN));
 	SetDCPenColor(dc, sprite.brush);
-	Rectangle(dc, (int)(sprite.pos.x), (int)(sprite.pos.y), (int)(sprite.pos.x + sprite.size.x) , (int)(sprite.pos.y + sprite.size.y));
+	Rectangle(dc, (int)(sprite.pos.x), (int)(sprite.pos.y), (int)(sprite.pos.x + sprite.size.x), (int)(sprite.pos.y + sprite.size.y));
 
 }
 
 void MoveSprite(TSprite* sprite) {
-	if ((sprite->pos.x + sprite->acc.x) > 540) {
+	if ((sprite->pos.x + sprite->acc.x) > rct.right - 100) {
 		sprite->pos.x -= 100;
 		return;
 	}
@@ -46,7 +46,7 @@ void MoveSprite(TSprite* sprite) {
 		sprite->pos.x += 100;
 		return;
 	}
-	if ((sprite->pos.y + sprite->acc.y) > 380) {
+	if ((sprite->pos.y + sprite->acc.y) > rct.bottom - 100) {
 		sprite->pos.y -= 100;
 		return;
 	}
@@ -54,7 +54,7 @@ void MoveSprite(TSprite* sprite) {
 		sprite->pos.y += 100;
 		return;
 	}
-	
+
 
 	sprite->pos.x += sprite->acc.x;
 	sprite->pos.y += sprite->acc.y;
@@ -74,11 +74,11 @@ void Navigation() {
 	if (GetKeyState('A') < 0) {
 		rect.acc.x = -acc;
 	}
-		
+
 	if (GetKeyState('D') < 0) {
 		rect.acc.x = acc;
 	}
-	
+
 
 
 }
@@ -99,10 +99,10 @@ void WinShow(HDC dc) {
 	HDC memDC = CreateCompatibleDC(dc);
 	HBITMAP memBM = CreateCompatibleBitmap(dc, rct.right - rct.left, rct.bottom - rct.top);
 	SelectObject(memDC, memBM);
-	
+
 	SelectObject(memDC, GetStockObject(DC_BRUSH));
 	SetDCBrushColor(memDC, RGB(255, 255, 255));
-	Rectangle(memDC, 0, 0, 640, 480);
+	Rectangle(memDC, 0, 0, rct.right, rct.bottom);
 	DrawSprite(rect, memDC);
 
 	BitBlt(dc, 0, 0, rct.right - rct.left, rct.bottom - rct.top, memDC, 0, 0, SRCCOPY);
@@ -113,7 +113,7 @@ void WinShow(HDC dc) {
 
 
 LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
-	
+
 	if (message == WM_DESTROY) {
 		PostQuitMessage(0);
 
@@ -121,7 +121,7 @@ LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 	else if (message == WM_SIZE) {
 		GetClientRect(hwnd, &rct);
 	}
-	
+
 	else
 	{
 		DefWindowProcA(hwnd, message, wparam, lparam);
